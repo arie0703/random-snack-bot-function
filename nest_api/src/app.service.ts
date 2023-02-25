@@ -2,14 +2,18 @@ import { Injectable } from '@nestjs/common';
 require('dotenv').config();
 const REGION: string = "ap-northeast-1";
 
-const { DynamoDBClient, ScanCommand } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBClient, ScanCommand, PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { fromIni } = require("@aws-sdk/credential-providers");
 
-var client = new DynamoDBClient({ region: REGION });
+var client = new DynamoDBClient({ 
+    region: REGION, 
+    credentials: fromIni({ profile: process.env.AWS_PROFILE 
+  })
+});
 
 var params = {
   TableName: 'snacks',
-  credentials: fromIni({ profile: process.env.AWS_PROFILE })
+  // credentials: fromIni({ profile: process.env.AWS_PROFILE })
 };
 
 interface ScannedData {
@@ -28,5 +32,25 @@ export class AppService {
   async getItems(): Promise<object[]> {
     var res: ScannedData = await client.send(new ScanCommand(params));
     return res.Items
+  }
+
+  async postItem(snack_name: string) {
+
+    var response: object = {}
+    try {
+      const command = new PutItemCommand({
+        TableName: 'snacks',
+        Item: {
+          name: { S: snack_name },
+        },
+      });
+      response = await client.send(command);
+      return response;
+
+    } catch (err) {
+      console.log(err);
+    }
+
+    return response;
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -14,4 +14,9 @@ export class AppController {
   getItems(): Promise<object[]> {
     return this.appService.getItems();
   }
+
+  @Post(':snack_name')
+  postItem(@Param('snack_name') snack_name: string): object {
+    return this.appService.postItem(snack_name);
+  } 
 }
