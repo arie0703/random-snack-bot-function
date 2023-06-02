@@ -1,6 +1,4 @@
 import request from 'request';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 const { DynamoDBClient, ScanCommand } = require("@aws-sdk/client-dynamodb");
 const REGION = "ap-northeast-1";
 
@@ -16,18 +14,21 @@ export const getItems = async () => {
 };
 
 
-export const handler = async (event) => {
+export const handler = async () => {
 
     const res = await getItems();
     const length = res.Count;
+
+    // Scanしたアイテムからランダムで一つのアイテムを選択する
     var randomNum = Math.floor(Math.random() * length);
     const selectedItem = res.Items[randomNum].name.S;
 
     const dataString = JSON.stringify({ "snack_name": selectedItem });
     const headers = { "Content-Type": "application/json" };
 
+    // Slackに送信する情報を格納
     const options = {
-        url: process.env.WEBHOOK_URL,
+        url: process.env.WEBHOOK_URL as string,
         headers: headers,
         body: dataString,
         method: "POST",
